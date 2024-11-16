@@ -56,7 +56,7 @@ add_executable(tictactoe Application.cpp
                           classes/Square.cpp
                           classes/ChessSquare.cpp
                           classes/Chess.cpp
-                          classes/MoveGenerator.cpp
+                          classes/Log.cpp
                           ${MAIN_FILE}
                           ${IMPL_FILE}
                 )
