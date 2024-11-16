@@ -129,6 +129,7 @@ public:
 	std::string _lastMove;
 
 	GameOptions _gameOptions;
+	std::vector<BitHolder*> _optionsSquares;
 
 protected:
 	void mouseDown(ImVec2 &location, Entity *bit);

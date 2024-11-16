@@ -84,7 +84,7 @@ bool BitHolder::dropBitAtPoint(Bit *bit, const ImVec2 &point)
 void BitHolder::initHolder(const ImVec2 &position, const ImVec4 &color, const char *spriteName)
 {
 	setPosition(position.x, position.y);
-	setColor(color.y, color.x, color.z, color.w);
+	setColor(color.x, color.y, color.z, color.w);
 	setSize(0, 0);
 	setScale(1.0f);
 	setLocalZOrder(0);
@@ -92,6 +92,4 @@ void BitHolder::initHolder(const ImVec2 &position, const ImVec4 &color, const ch
 	setGameTag(0);
 	setBit(nullptr);
 	LoadTextureFromFile(spriteName);
-	_x = position.x;
-    _y = position.y;
 }

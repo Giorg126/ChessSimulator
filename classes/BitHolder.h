@@ -58,8 +58,6 @@ public:
 		return Sprite::isMouseOver(mousePos);
 	};
 
-	int _x, _y;
-
 protected:
 	Bit *_bit;
 	int _gameTag;

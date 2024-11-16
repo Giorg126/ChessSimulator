@@ -1,9 +1,10 @@
 #include "Chess.h"
+#include "Log.h"
 
 const int AI_PLAYER = 1;
 const int HUMAN_PLAYER = -1;
 
-Chess::Chess() : moveGenerator(this){
+Chess::Chess(){
 
 }
 
@@ -44,6 +45,7 @@ void Chess::setUpBoard()
     //
     char piece[2];
     piece[1] = 0;
+
     for (int y = 0; y < _gameOptions.rowY; y++) {
         for (int x = 0; x < _gameOptions.rowX; x++) {
             ImVec2 position((float)(pieceSize * x + pieceSize), (float)(pieceSize * (_gameOptions.rowY - y) + pieceSize));
@@ -54,9 +56,7 @@ void Chess::setUpBoard()
         }
     }
 
-    // initializeBoard();
-    placePieceAt(0, Queen, 4, 4);
-    placePieceAt(1, Pawn, 1, 1);
+    initializeBoard();
 }
 
 
@@ -123,21 +123,115 @@ bool Chess::canBitMoveFrom(Bit &bit, BitHolder &src) {
 }
 
 bool Chess::canBitMoveFromTo(Bit &bit, BitHolder &src, BitHolder &dst) {
-    if (bit.gameTag() == 5 || bit.gameTag() == 133) {
-        auto validMoves = moveGenerator.generateQueenMoves(bit, src);
-        for (auto move : validMoves) {
-            if (move == &dst) {
-                return true;
+
+    // retrieve source and destination row and column indices
+    ChessSquare &srcSquare = static_cast<ChessSquare&>(src);
+    ChessSquare &dstSquare = static_cast<ChessSquare&>(dst);
+
+    int srcRow = srcSquare.getRow();
+    int srcCol = srcSquare.getColumn();
+    int dstRow = dstSquare.getRow();
+    int dstCol = dstSquare.getColumn();
+
+    // step length in coordinates
+    int rowDiff = abs(dstRow - srcRow);
+    int colDiff = abs(dstCol - srcCol);
+
+    // check the direction of the move
+    bool isStraightMove = (srcRow == dstRow || srcCol == dstCol);
+    bool isDiagonalMove = (rowDiff == colDiff);
+    bool isKnightMove = (rowDiff == 2 && colDiff == 1) || (rowDiff == 1 && colDiff == 2);
+
+    // avoid moving on a square containing a piece of the same color
+    if (dst.bit() != nullptr && dst.bit()->getOwner() == bit.getOwner()) {
+        return false; 
+    }
+
+    if (bit.gameTag() % 128 == Queen) {
+        if (!isStraightMove && !isDiagonalMove) {
+            return false; 
+        }
+    }
+    if (bit.gameTag() % 128 == Rook) {
+        if (!isStraightMove) {
+            return false; 
+        }
+    }
+    if (bit.gameTag() % 128 == Bishop) {
+        if (!isDiagonalMove) {
+            return false; 
+        }
+    }
+    if (bit.gameTag() % 128 == King) {
+        if (rowDiff > 1 || colDiff > 1) {
+            return false; 
+        }
+    }
+    if (bit.gameTag() % 128 == Knight) {
+        if (!((rowDiff == 2 && colDiff == 1) || (rowDiff == 1 && colDiff == 2))) {
+            return false; 
+        }
+    }
+    if (bit.gameTag() % 128 == Pawn) {
+        // a pawn has a maximum of 2 steps forward and 1 step diagonally
+        if (colDiff > 1 || rowDiff > 2 || rowDiff == 0)
+            return false;
+
+        // a pawn can't move backwards!
+        if (bit.gameTag() < 128 && dstRow < srcRow)
+            return false;
+        if (bit.gameTag() >= 128 && dstRow > srcRow)
+            return false;
+        
+        // allow 2 steps only if it's the first move
+        if (rowDiff > 1) {
+            if (colDiff != 0)
+                return false;
+            else 
+            if ((bit.gameTag() < 128 && srcRow != 1) || (bit.gameTag() >= 128 && srcRow != 6) || dst.bit() != nullptr)
+                return false;
             }
+        
+        if (rowDiff == 1) {
+            // avoid eating forward
+            if (colDiff == 0) {
+                if (dst.bit() != nullptr) 
+                    return false;
+                
+            // allow eating diagonally
+            } else {
+                if (dst.bit() == nullptr) 
+                    return false;
+                
+            }
+
         }
     }
 
-    if (bit.gameTag() == 1 || bit.gameTag() == 129) {
-        return canMovePawn(bit, src, dst);
+    // check if the path is clear
+    int rowStep = (dstRow > srcRow) ? 1 : ((dstRow < srcRow) ? -1 : 0);
+    int colStep = (dstCol > srcCol) ? 1 : ((dstCol < srcCol) ? -1 : 0);
+
+    int currentRow = srcRow + rowStep;
+    int currentCol = srcCol + colStep;
+
+    // if it's a knight no need to check the path
+    if (isKnightMove) {
+        return true; 
     }
 
-    return false;
+    while (currentRow != dstRow || currentCol != dstCol){
+        if (_grid[currentRow][currentCol].bit() != nullptr) {
+            return false; 
+        }
+        currentRow += rowStep;
+        currentCol += colStep;
+    }
+
+    return true;
 }
+
+
 
 
 

@@ -4,6 +4,7 @@
 #include "../imgui/imgui.h"
 #include <map>
 #include <string>
+#include "Log.h"
 
 struct SpriteCacheObject
 {

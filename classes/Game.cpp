@@ -3,6 +3,7 @@
 #include "BitHolder.h"
 #include "Turn.h"
 #include "../Application.h"
+#include "ChessSquare.h"
 
 Game::Game()
 {
@@ -334,12 +335,39 @@ void Game::mouseDown(ImVec2 &location, Entity *entity)
 	_oldPos = _dragBit->getPosition();
 	if (_dragBit)
 		_dragBit->setPickedUp(true);
+		
+		//-------------------------------- highlight possible moves
+
+		for (int y = 0; y < _gameOptions.rowY; y++)
+		{
+			for (int x = 0; x < _gameOptions.rowX; x++)
+			{
+				if (canBitMoveFromTo(*_dragBit, *_oldHolder, getHolderAt(x, y)))
+				{
+					BitHolder &holder = getHolderAt(x, y);
+					
+					if (x % 2 == y % 2)
+					{
+						holder.setColor(0.5f, 0.3f, 0.6f, 1.0f);
+					}
+					else
+					{
+						holder.setColor(0.9f, 0.7f, 0.8f, 1.0f);
+					}
+				}
+			}
+		}
+		//--------------------------------
 
 	if (placing && _dragBit)
 	{
 		_dragBit->setCenterPosition(_dragStartPos); // animate Bit to new position
 		_dragMoved = true;
 		findDropTarget(_dragStartPos);
+
+		// reset the color
+
+
 	}
 }
 
@@ -365,6 +393,28 @@ void Game::mouseMoved(ImVec2 &location, Entity *entity)
 
 void Game::mouseUp(ImVec2 &location, Entity *entity)
 {
+	// -------------------------------- clear the highlights
+
+	for (int y = 0; y < _gameOptions.rowY; y++)
+    {
+        for (int x = 0; x < _gameOptions.rowX; x++)
+        {
+            BitHolder &holder = getHolderAt(x, y);
+
+            // Alternate colors based on logical indices
+            if ((x + y) % 2 == 0)
+            {
+                holder.setColor(0.58, 0.48, 0.36, 1.0); // Dark square
+            }
+            else
+            {
+                holder.setColor(0.93, 0.93, 0.84, 1.0); // Light square
+            }
+        }
+    }
+
+	// --------------------------------
+
 	if (!_dragBit)
 	{
 		// If no bit was clicked, see if it's a BitHolder the game will let the user add a Bit to:

@@ -37,5 +37,6 @@ private:
     }
     int _column;
     int _row;
+
     std::string _notation;
 };

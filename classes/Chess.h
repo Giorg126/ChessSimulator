@@ -1,7 +1,6 @@
 #pragma once
 #include "Game.h"
 #include "ChessSquare.h"
-#include "MoveGenerator.h"
 
 const int pieceSize = 64;
 
@@ -45,7 +44,6 @@ public:
 
 	void        updateAI() override;
     bool        gameHasAI() override { return true; }
-    MoveGenerator moveGenerator;
 private:
     Bit *       PieceForPlayer(const int playerNumber, ChessPiece piece);
     const char  bitToPieceNotation(int row, int column) const;
